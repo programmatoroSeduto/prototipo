@@ -8,11 +8,26 @@ METODI:
 #include <cstdlib>
 using namespace std;
 
-class map {
+class Map {
     
     public:
 
-    map(int dim);
+    Map(int dim);
+    /*
+        costrutture della matrice dando le dimensioni dell'array
+        istanzia la matrice e il buffer
+    */
+
+   bool addStartPoint(int x, int y);
+   /*
+        aggiungi la coordinata al buffer degli inserimenti
+        nota: il buffer è una coda
+   */
+
+  int pendingUpdates();
+  /*
+        quanti aggiornamenti rimangono da fare? conta quanti ce ne sono nella coda
+  */
     
     bool position(int x, int y);
     /*
@@ -21,7 +36,7 @@ class map {
         FALSE altrimenti
     */
 
-   int value(float val);
+   float value(float val);
    /*
         ritorna il nuovo valore associato alla cella
    */
@@ -37,4 +52,5 @@ class map {
     int x, y;
     int dim;
     float *arrayMap;
+    int *buffer;
 }

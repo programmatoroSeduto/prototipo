@@ -3,7 +3,7 @@
 #include "map.h"
 using namespace std;
 
-bool map::position(int x, int y)
+bool Map::position(int x, int y)
 {
-    
+
 }
