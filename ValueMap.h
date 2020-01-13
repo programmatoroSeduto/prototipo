@@ -166,6 +166,13 @@ class ValueMap
     bool test_tot_resource();
 
     /*
+        PER VERIFICARE LA VALIDITA' DEL METODO DI AGGIORNAMENTO
+        ritorna la differenza tra il valore memorizzato durante le aggiunte, e la somma di tutte le celle
+        se l'algoritmo funziona correttamente, allora il valore restituito è zero.
+    */
+    float get_resource_diff();
+
+    /*
         stampa su console la matrice
     */
     void print_map();

@@ -56,6 +56,7 @@ bool ValueMap::set_actual_value_at(int x, int y, float increment)
     else
     {
         t->set_delta(increment);
+        map_tot_resource += increment;
         return true;
     }
 }
@@ -98,6 +99,42 @@ void ValueMap::update_map_clock(int ck)
         update_step_1();
         update_step_2();
         clock++;
+    }
+}
+
+
+
+
+/*----------------------VISUALIZZAZIONE DOPO L'AGGIORNAMENTO----------------------*/
+
+bool ValueMap::test_tot_resource()
+{
+    if(map_tot_resource == sum_all_tiles())
+        return true;
+    else
+        return false;
+}
+
+
+
+
+float ValueMap::get_resource_diff() { return map_tot_resource - sum_all_tiles(); }
+
+int ValueMap::get_clock() { return clock; }
+
+
+
+
+void ValueMap::print_map()
+{
+    cout << endl;
+    
+    //stampa la matrice
+    for(int i=0; i<map_size; i++)
+    {
+        for(int j=0; j<map_size; j++)
+            cout << map[i][j] << "\t";
+        cout <<endl;
     }
 }
 
