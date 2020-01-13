@@ -1,9 +1,5 @@
 #include <iostream>
 #include <cstdlib>
-#include "map.h"
+#include "Map.h"
 using namespace std;
 
-bool Map::position(int x, int y)
-{
-
-}
