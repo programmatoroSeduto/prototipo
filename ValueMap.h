@@ -141,7 +141,7 @@ class ValueMap
         ridefinisci le statistiche della risorsa
         ritorna TRUE se i dati inseriti sono corretti, altrimenti FALSE
     */
-    bool newResourceType(float k, float toll);
+    bool new_resource_type(float k, float toll);
 
 
     /*----------------------AGGIORNAMENTO----------------------*/
@@ -203,8 +203,6 @@ class ValueMap
 
     //indici della coda
     int buffer_first, buffer_last;
-    //puntatore utilizzato durante la fase 2 dell'aggiornamento
-    int first_marked;
 
     /*----------------------OPERAZIONI SULLA MATRICE----------------------*/
 
@@ -215,7 +213,8 @@ class ValueMap
     float sum_all_tiles();
     
     /*
-        ritorna il puntatore alla cella in base alle coordinate reali
+        ritorna il puntatore alla cella in base alle coordinate reali, se le coordinate sono valide
+        altrimenti ritorna NULL
     */
     Tile* get_tile_at(int x, int y);
 
@@ -230,18 +229,28 @@ class ValueMap
     Tile* next_nearby_tile(int base_x, int base_y, int index);
 
     /*----------------------OPERAZIONI SUL BUFFER----------------------*/
+
+    /*
+        esegue l'operazione di modulo per l'accesso all'array buffer
+        tiene anche conto del segno
+
+        ritorna
+        un indice >= 0 se i è valido
+        -1 altrimenti
+    */
+    int idx(int i);
     
     /*
         ritorna l'elemento numero tot nel buffer
         il metodo tiene conto automaticamente della struttura ad array della coda
 
-        ritorna null nel caso l'indice sia troppo grande
+        ritorna NULL nel caso l'indice sia non valido
 
         è possibile scorrere il buffer in due direzioni:
         index positivo: muovi dal primo elemento all'ultimo
         index negativo: muovi l'indica dall'ultimo elemento al primo
     */
-    Tile *get_from_buffer(int index);
+    Tile* get_from_buffer(int index);
 
     /*
         ritorna l'elemento numero tot nel buffer
@@ -270,6 +279,18 @@ class ValueMap
         elimina dalla coda tutti i tile marcati
     */
     bool dequeue_all_marked();
+
+    /*----------------------ALGORITMO DI AGGIORNAMENTO----------------------*/
+
+    /*
+        FASE 1 dell'algoritmo di aggiornamento
+    */
+    void update_step_1();
+
+    /*
+        FASE 2 dell'algoritmo di aggiornamento
+    */
+    void update_step_2();
 
 };
 
