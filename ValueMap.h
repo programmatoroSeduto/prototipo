@@ -59,8 +59,22 @@ class Resource
         COSTRUTTORE
         propagFactor : velocità di propagazione della risorsa tra celle vicine, in percentuale
         toll : di quanto il propagationFactor reale può discostarsi da quello nominale
+
+        NOTA BENE: nessun controllo sulla validità delle informazioni inserite!
     */
-    Resource(float propagFactor, float toll);
+    Resource(float propagFactor, float toll); 
+    
+    /*
+        COSTRUTTORE con seed
+        propagFactor : velocità di propagazione della risorsa tra celle vicine, in percentuale
+        toll : di quanto il propagationFactor reale può discostarsi da quello nominale
+        seed : seme per il generatore casuale
+            seed >= 0 : seed col valore dato
+            seed < 0 : seed in base al tempo di sistema
+
+        NOTA BENE: nessun controllo sulla validità delle informazioni inserite!
+    */
+    Resource(float propagFactor, float toll, int seed);
 
     //ritorna il propagationFactor nominale
     float get_k();
@@ -68,14 +82,28 @@ class Resource
     //ritorna il propagationFactor reale, calcolato in base alla tolleranza
     float get_real_k();
 
-    //modifica le statistiche della risorsa
-    //ritorna il nuovo valore della statistica indicata
+    /*
+        seed del generatore casuale
+    */
+    void seed_real_k(); void seed_real_k(int seed);
+
+    //valore del seed usato per generare i valori della tolleranza
+    int get_seed();
+
+    /*
+        modifica le statistiche della risorsa
+        ritorna il nuovo valore della statistica indicata
+
+        NOTA BENE: nessun controllo sulla validità delle informazioni inserite!
+    */
     float set_k(float new_k); float set_toll(float new_toll);
 
     private:
 
     float propagationFactor;
     float tollerance;
+
+    int seed;
 
     float generate_tollerance_value();
 };
@@ -108,6 +136,12 @@ class ValueMap
         ritorna TRUE se è stato possibile effettuare l'aggiornamento, altrimenti FALSE.
     */
     bool set_actual_value_at(int x, int y, float increment);
+
+    /*
+        ridefinisci le statistiche della risorsa
+        ritorna TRUE se i dati inseriti sono corretti, altrimenti FALSE
+    */
+    bool newResourceType(float k, float toll);
 
 
     /*----------------------AGGIORNAMENTO----------------------*/
