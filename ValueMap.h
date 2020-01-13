@@ -195,7 +195,7 @@ class ValueMap
     
     //coordinate dei vertici
     //sono V1 in alto a destra
-    //e V2 in basso a sinistra
+    //e V3 in basso a sinistra
     int vertex[2][2];
 
     //il buffer
