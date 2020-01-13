@@ -9,7 +9,7 @@ class Tile
         COSTRUTTORE
         (x, y) posizione del tile
     */
-    Tile(int x, int y);
+    Tile() = default; Tile(int x, int y);
 
     //le coordinate della cella
     int get_x(); int get_y();
@@ -62,7 +62,7 @@ class Resource
 
         NOTA BENE: nessun controllo sulla validità delle informazioni inserite!
     */
-    Resource(float propagFactor, float toll); 
+    Resource() = default; Resource(float propagFactor, float toll); 
     
     /*
         COSTRUTTORE con seed
@@ -124,7 +124,7 @@ class ValueMap
         istanzia una matrice quadrata di lato dim
         e inizializza tutti i valori utili per la lavorazione
     */
-    ValueMap(int dim);
+    ValueMap() = default; ValueMap(int dim);
 
     /*----------------------OPERAZIONI DALL'ESTERNO----------------------*/
 
@@ -170,6 +170,11 @@ class ValueMap
     */
     void print_map();
 
+    /*
+        ritorna il valore di clock attuale
+    */
+    int get_clock();
+
 
     private:
 
@@ -177,7 +182,7 @@ class ValueMap
     int clock;
 
     //la matrice
-    Tile* map; int map_size;
+    Tile* **map; int map_size;
 
     //totale di risorsa nella mappa
     float map_tot_resource;
@@ -189,11 +194,12 @@ class ValueMap
     int origin_position[2];
     
     //coordinate dei vertici
-    int vertex[4][2];
+    //sono V1 in alto a destra
+    //e V2 in basso a sinistra
+    int vertex[2][2];
 
     //il buffer
-    Tile* buffer; 
-    int buffer_size;
+    Tile* *buffer; int buffer_size;
 
     //indici della coda
     int buffer_first, buffer_last;
