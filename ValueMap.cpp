@@ -56,6 +56,7 @@ bool ValueMap::set_actual_value_at(int x, int y, float increment)
     else
     {
         t->set_delta(increment);
+        t->update_actualValue();
         map_tot_resource += increment;
         return true;
     }
