@@ -61,10 +61,13 @@ class Resource
         toll : di quanto il propagationFactor reale può discostarsi da quello nominale
 
         NOTA BENE: nessun controllo sulla validità delle informazioni inserite!
+        se toll > propagFactor, viene presa la differenza tra toll e propagFactor anzichè solo toll
     */
     Resource() = default; Resource(float propagFactor, float toll); 
     
     /*
+        METODO DEPRECATO! esistono modi migliori della funzione rand() per generare numeri random...
+
         COSTRUTTORE con seed
         propagFactor : velocità di propagazione della risorsa tra celle vicine, in percentuale
         toll : di quanto il propagationFactor reale può discostarsi da quello nominale
@@ -73,6 +76,7 @@ class Resource
             seed < 0 : seed in base al tempo di sistema
 
         NOTA BENE: nessun controllo sulla validità delle informazioni inserite!
+        se toll > propagFactor, viene presa la differenza tra toll e propagFactor anzichè solo toll
     */
     Resource(float propagFactor, float toll, int seed);
 
@@ -83,12 +87,17 @@ class Resource
     float get_real_k();
 
     /*
+        DEPRECATO!
         seed del generatore casuale
     */
     void seed_real_k(); void seed_real_k(int seed);
 
+    //DEPRECATO!
     //valore del seed usato per generare i valori della tolleranza
     int get_seed();
+
+    //ritorna la tolleranza impostata per la risorsa
+    float get_tollerance();
 
     /*
         modifica le statistiche della risorsa
@@ -103,7 +112,10 @@ class Resource
     float propagationFactor;
     float tollerance;
 
+    //DEPRECATO!
     int seed;
+
+    int n_ops;
 
     float generate_tollerance_value();
 };
@@ -162,6 +174,8 @@ class ValueMap
         PER VERIFICARE LA VALIDITA' DEL METODO DI AGGIORNAMENTO
         verifica se la riorsa si è conservata durante gli aggiornamenti
         ovvero verifica se la somma delle risorse calcolata durante gli inserimenti è uguale a quella calcolata con la somma di tutti gli elementi della matrice
+
+        ritorna true se la risorsa si conserva a meno di 10e-2 . 
     */
     bool test_tot_resource();
 
@@ -181,6 +195,11 @@ class ValueMap
         ritorna il valore di clock attuale
     */
     int get_clock();
+
+    /*
+        ritorna il tipo della risorsa utilizzato per la simulazione
+    */
+    Resource get_resource_stats();
 
 
     private:
@@ -233,7 +252,7 @@ class ValueMap
         ritorna il puntatore ad una cella vicina, qualunque essa sia
         NOTA BENE: il metodo tiene conto automaticamente delle celle raggiungibili
     */
-    Tile* next_nearby_tile(int base_x, int base_y, int index);
+    Tile* next_nearby_tile(int base_x, int base_y, int &index);
 
     /*----------------------OPERAZIONI SUL BUFFER----------------------*/
 

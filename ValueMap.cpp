@@ -19,7 +19,8 @@ ValueMap::ValueMap(int dim)
     r = Resource(0, 0, -1);
 
     //posizione dell'origine nella mappa, nelle coordinate reali
-    origin_position[0] = origin_position[1] = dim/2;
+    origin_position[0] = (dim%2 == 0 ? dim/2 - 1 : dim/2);
+    origin_position[1] = (dim%2 == 0 ? dim/2 - 1 : dim/2);
 
     //cout << "origin(x:" << origin_position[0] << " ,y:" << origin_position[1] <<")" << endl;
 
@@ -39,8 +40,8 @@ ValueMap::ValueMap(int dim)
     //cout << "V1(x:" << vertex[0][0] << " ,y:" << vertex[0][1] <<")" << endl;
 
     //vertice V3
-    vertex[1][0] = origin_position[0] - dim + 1;
-    vertex[1][1] = origin_position[1] - dim + 1;
+    vertex[1][0] = origin_position[0] - dim + (dim%2 == 0 ? 2 : 1);
+    vertex[1][1] = origin_position[1] - dim + (dim%2 == 0 ? 2 : 1);
 
     //cout << "V3(x:" << vertex[1][0] << " ,y:" << vertex[1][1] <<")" << endl;
 
@@ -69,7 +70,7 @@ bool ValueMap::set_actual_value_at(int x, int y, float increment)
         t->set_delta(increment);
         t->update_actualValue();
         map_tot_resource += increment;
-        cout << "risposta: " << enqueue(t) << endl ;
+        enqueue(t);
         return true;
     }
 }
@@ -85,7 +86,7 @@ bool ValueMap::new_resource_type(float k, float toll)
         return false;
     else
     {
-        r = Resource(k, toll);
+        r = Resource(k, toll, -1);
         //cout << "NEW RESOURCE TYPE k=" << r.get_k() << " e=" << toll << endl;
         return true;
     }
@@ -101,6 +102,8 @@ void ValueMap::update_map()
     if(length_of_buffer() == 0)
     {
         //cout << "nessuna cella da aggiornare." << endl;
+        //cout << "UPDATE empty queue condition ..." << endl ;
+        clock++;
         return;
     }
 
@@ -117,6 +120,8 @@ void ValueMap::update_map_clock(int ck)
     if(length_of_buffer() == 0)
     {
         //cout << "nessuna cella da aggiornare." << endl;
+        //cout << "UPDATE CLOCK empty queue condition ..." << endl ;
+        clock += ck;
         return;
     }
 
@@ -135,7 +140,8 @@ void ValueMap::update_map_clock(int ck)
 
 bool ValueMap::test_tot_resource()
 {
-    if(map_tot_resource == sum_all_tiles())
+    float diff = map_tot_resource - sum_all_tiles();
+    if( (diff < 0.01) || (diff > -0.01) )
         return true;
     else
         return false;
@@ -148,18 +154,21 @@ float ValueMap::get_resource_diff() { return map_tot_resource - sum_all_tiles();
 
 int ValueMap::get_clock() { return clock; }
 
+Resource ValueMap::get_resource_stats() { return r; }
+
 
 
 
 void ValueMap::print_map()
 {
     cout << endl;
+    //cout << "map_size=" << map_size << endl;
     
     //stampa la matrice
-    for(int i=0; i<map_size; i++)
+    for(int i=map_size-1; i>=0; i--)
     {
         for(int j=0; j<map_size; j++)
-            cout << map[i][j]->get_actualValue() << "\t";
+            cout << map[j][i]->get_actualValue() << "\t";
         cout <<endl;
     }
 
@@ -202,7 +211,7 @@ Tile* ValueMap::get_tile_at(int x, int y)
 
 
 
-Tile* ValueMap::next_nearby_tile(int base_x, int base_y, int index)
+Tile* ValueMap::next_nearby_tile(int base_x, int base_y, int &index)
 {
     /*
         CONVENZIONE:
@@ -215,54 +224,14 @@ Tile* ValueMap::next_nearby_tile(int base_x, int base_y, int index)
 
     Tile* t = NULL;
 
+    //cout << "NEXT NEARBY TILE base_x=" << base_x << " base_y=" << base_y << endl;
+
     switch(index)
     {
         case 0:
             t = get_tile_at(base_x, base_y + 1);
             /*
-            cout << "NEXT NEARBY TILE up tile=" << t;
-            if(t != NULL)
-                cout << " x=" << t->get_x() << " y=" << t->get_y() << endl;
-            else
-                cout << endl;
-            */
-            if(t == NULL)
-                return next_nearby_tile(base_x, base_y, 1);
-            else
-                return t;
-        break;
-        case 1:
-            t = get_tile_at(base_x + 1, base_y);
-            /*
-            cout << "NEXT NEARBY TILE right tile= << t";
-            if(t != NULL)
-                cout << " x=" << t->get_x() << " y=" << t->get_y() << endl;
-            else
-                cout << endl;
-            */
-            if(t == NULL)
-                return next_nearby_tile(base_x, base_y, 2);
-            else
-                return t;
-        break;
-        case 2:
-            t = get_tile_at(base_x, base_y - 1);
-            /*
-            cout << "NEXT NEARBY TILE down tile=" << t;
-            if(t != NULL)
-                cout << " x=" << t->get_x() << " y=" << t->get_y() << endl;
-            else
-                cout << endl;
-            */
-            if(t == NULL)
-                return next_nearby_tile(base_x, base_y, 3);
-            else
-                return t;
-        break;
-        case 3:
-            t = get_tile_at(base_x - 1, base_y);
-            /*
-            cout << "NEXT NEARBY TILE left tile=" << t;
+            cout << "NEXT NEARBY TILE ---up--- tile=" << t;
             if(t != NULL)
                 cout << " x=" << t->get_x() << " y=" << t->get_y() << endl;
             else
@@ -270,15 +239,73 @@ Tile* ValueMap::next_nearby_tile(int base_x, int base_y, int index)
             */
             if(t == NULL)
             {
+                index++;
+                //cout << "NEXT_NEARBY_TILE j=" << index << endl;
+                return next_nearby_tile(base_x, base_y, index);
+            }
+            else
+                return t;
+        break;
+        case 1:
+            t = get_tile_at(base_x + 1, base_y);
+            /*
+            cout << "NEXT NEARBY TILE ---right--- tile=" << t;
+            if(t != NULL)
+                cout << " x=" << t->get_x() << " y=" << t->get_y() << endl;
+            else
+                cout << endl;
+            */
+            if(t == NULL)
+            {
+                index++;
+                //cout << "NEXT_NEARBY_TILE j=" << index << endl;
+                return next_nearby_tile(base_x, base_y, index);
+            }
+            else
+                return t;
+        break;
+        case 2:
+            t = get_tile_at(base_x, base_y - 1);
+            /*
+            cout << "NEXT NEARBY TILE ---down--- tile=" << t;
+            if(t != NULL)
+                cout << " x=" << t->get_x() << " y=" << t->get_y() << endl;
+            else
+                cout << endl;
+            */
+            if(t == NULL)
+            {
+                index++;
+                //cout << "NEXT_NEARBY_TILE j=" << index << endl;
+                return next_nearby_tile(base_x, base_y, index);
+            }
+            else
+                return t;
+        break;
+        case 3:
+            t = get_tile_at(base_x - 1, base_y);
+            /*
+            cout << "NEXT NEARBY TILE ---left--- tile=" << t;
+            if(t != NULL)
+                cout << " x=" << t->get_x() << " y=" << t->get_y() << endl;
+            else
+                cout << endl;
+            */
+            if(t == NULL)
+            {
+                index++;
                 //cout << "NEXT NEARBY TILE returning NULL..."<< endl;
+                //cout << "NEXT_NEARBY_TILE j=" << index << endl;
                 return NULL;
             }
             else
                 return t;
         break;
+        /*
         default:
-            //cout << "NEXT NEARBY TILE returning NULL..."<< endl;
+            cout << "NEXT NEARBY TILE returning NULL..."<< endl;
             return NULL;
+        */
     }
     return NULL;
 }
@@ -396,7 +423,8 @@ bool ValueMap::dequeue_all_marked()
         return false;
     }
 
-    for(int i = buffer_first; i < buffer_last; i++)
+    /*
+    for(int i = buffer_first; i < buffer_last; i=(i+1)%buffer_size)
     {
         if(buffer[i]->is_marked())
         {
@@ -407,6 +435,55 @@ bool ValueMap::dequeue_all_marked()
         else
             break;
     }
+    */
+
+    //cout << "DEQUEUE starting for... buffer_size=" << buffer_size << endl;
+/*
+    for(int i = 0, n = 0; i < buffer_size - 1; i++)
+    {
+        if(buffer[idx(i)]->is_marked())
+        {
+             buffer[idx(i)] = NULL;
+             n++;
+        }
+        else
+        {
+             buffer_first = (buffer_first + n) % buffer_size;
+             cout << "DEQUEUE dequeue done! buffer_first=" << buffer_first << " buffer_last=" << buffer_last << " buffer_length=" << length_of_buffer() << endl;
+             break;
+        }
+    }
+    */
+
+    int n=0, i=buffer_first;
+    while(buffer[i] != NULL)
+    {
+        //cout << "DEQUEUE while"<< " i=" << i << " marked=" << buffer[i]->is_marked() << endl;
+        if(buffer[i]->is_marked())
+        {
+            buffer[i]->unmark();
+            buffer[i] = NULL;
+            n++;
+            i = (i+1)%buffer_size;
+            //cout << "DEQUEUE while n=" << n << " i=" << i << endl;
+        }
+        else break;
+    }
+    buffer_first = (buffer_first + n) % buffer_size;
+    //cout << "DEQUEUE dequeue done! buffer_first=" << buffer_first << " buffer_last=" << buffer_last << " buffer_length=" << length_of_buffer() << endl;
+
+    //cout << "DEQUEUE ending for... buffer_length=" << length_of_buffer() << endl;
+    /*
+    cout << "buffer=[\t" ;
+    for(int k = 0; k < buffer_size; k++)
+    {
+        if(k == buffer_first) cout << buffer[k] << "*" << "\t";
+        else if (k == buffer_last) cout << buffer[k] << "+" << "\t";
+        else cout << buffer[k] << "\t";
+    }
+    cout << "]" << endl;
+    */
+    //cout << "DEQUEUE ending ..." << endl;
 
     return true;
 }
@@ -418,9 +495,11 @@ bool ValueMap::dequeue_all_marked()
 
 void ValueMap::update_step_1()
 {
+    //cout << "starting UPDATE STEP 1 ..." << endl;
+
     int length_buf = length_of_buffer();
 
-    //cout << "here! UPDATE STEP 1 length_buf=" << length_buf << " start update..." << endl;
+    //cout << "UPDATE STEP 1 length_buf=" << length_buf << " start update..." << endl;
 
     for(int i=0; i < length_buf; i++)
     {
@@ -451,9 +530,11 @@ void ValueMap::update_step_1()
         //programma aggiornamento cella presente
         float delta_value = (r.get_real_k())*(res_mean - t->get_actualValue());
         //cout << "UPDATE STEP 1 delta=" << delta_value << endl;
-        t->set_delta(delta_value);
 
-        //nota: se il delta è a zero, non procedere nell'aggiornamento
+        //l'aggiornamento si interromperebbe qualora non servisse alcuna modifica dei valori
+        if(delta_value == 0.0) continue;
+
+        t->set_delta(delta_value);
 
         //cout << "UPDATE STEP 1 starting delta assignment..." << endl;
 
@@ -468,13 +549,16 @@ void ValueMap::update_step_1()
             else
             {
                 //cout << "UPDATE STEP 1 set delta on cell=" << temp << endl;
-                temp->set_delta(-(delta_value/static_cast<double>(n)));
+                temp->set_delta(-(delta_value/static_cast<float>(n)));
                 enqueue(temp);
+                //cout << "UPDATE_STEP_1 end cell, j=" << j << endl;
             }
         }
 
-        //cout << "new buffer_length=" << length_of_buffer() << " endinf update step 1..." << endl;
+        //cout << "new buffer_length=" << length_of_buffer() << " at ending of update step 1..." << endl;
     }
+
+    //cout << "ending UPDATE STEP 1 ..." << endl;
 }
 
 
@@ -483,11 +567,13 @@ void ValueMap::update_step_1()
 void ValueMap::update_step_2()
 {
     //cout << "UPDATE step 2 starting..." << endl;
+
     for(int i=0; i<length_of_buffer();i++)
     {
         //cout << "UPDATE STEP 2 i=" << i << " tile=" << get_from_buffer(i) << endl;
         get_from_buffer(i)->update_actualValue();
     }
     dequeue_all_marked();
+
     //cout << "UPDATE step 2 ending..." << endl;
 }

@@ -19,7 +19,9 @@ enum commands
     verify,
     resource_diff,
     logout,
-    nop
+    nop,
+    set_resource_type,
+    print_resource_type
 };
 
 /*
@@ -30,9 +32,13 @@ enum commands
 */
 int parse_command(string cmd)
 {
-    if(cmd == "SET_VALUE")
+    if(cmd == "SET_VALUE" || cmd == "SET" || cmd == "S")
         return insert_single_value;
-    else if (cmd == "SET_VALUE_MULTI")
+    else if (cmd == "SET_RESOURCE")
+        return set_resource_type;
+    else if (cmd == "RESOURCE")
+        return print_resource_type;
+    else if (cmd == "SET_VALUE_MULTI" || cmd == "SET_MULTI" || cmd == "SM")
         return insert_multi;
     else if(cmd == "UPDATE")
         return update;
@@ -66,14 +72,17 @@ ValueMap init_map()
     cout << "\n" << "dimensioni della mappa: " << endl;
     int dim;
     cin >> dim; cout << endl;
-    cout << "velocità di propagazione(tra 0 e 1): ";
+    cout << "velocita' di propagazione(tra 0 e 1): ";
     float k;
     cin >> k; cout << endl;
-    cout << "tolleranza sulla velocità di propagazione(tra 0 e 1): ";
+    cout << "tolleranza sulla velocita' di propagazione(tra 0 e 1): ";
     float e;
     cin >> e; cout << endl;
     ValueMap m = ValueMap(dim);
-    m.new_resource_type(k, e);
+    if(k>=0 && k<=1 && e<=k && e>=0 && e<=1)
+        m.new_resource_type(k, e);  
+    else
+        cout << "ERRORE: dati non validi." << endl;
     return m;
 }
 
@@ -101,17 +110,19 @@ void print_help_f()
 {
     cout << "PROTOTIPO ALGORITMO DI PROPAGAZIONE DI UN VALORE IN UNA MATRICE" << endl
         << "Ecco i comandi:" << endl 
-        << "SET_VALUE : modifica il valore di una cella" << endl
-        << "SET_VALUE_MULTI : modifica i valori di un certo numero di celle" << endl
+        << "SET_RESOURCE : definisci un nuovo tipo di risorsa, rimpiazzando quello precedentemente definito" << endl
+        << "RESOURCE : visualizza le statistiche della risorsa attualmente usata dal simulatore" << endl
+        << "SET_VALUE o SET o S : modifica il valore di una cella" << endl
+        << "SET_VALUE_MULTI o SET_MULTI o SM: modifica i valori di un certo numero di celle" << endl
         << "UPDATE : aggiornamento per un ciclo di clock" << endl
         << "UPDATE_CK : ripeti l'aggiornamento per un certo ciclo di clock" << endl
         << "CK : stampa l'attuale valore del clock" << endl
         << "PRINT_MAP o PRINT o P : stampa la matrice" << endl
         << "UPDATE_N_PRINT oppure UP : esegui l'aggiornamento per un ciclo e stampa al termine" << endl
         << "HELP : stampa questa guida dei comandi" << endl
-        << "VERIFY : verifica se il valore della risorsa è uguale a quello previsto" << endl
+        << "VERIFY : verifica se il valore della risorsa e' uguale a quello previsto" << endl
         << "RES_DIFF : mostra la differenza tra il valore previsto di risorsa e quello calcolato dalla somma di tutte le celle della mappa" << endl
-        << "EXIT : chiudi il simulatore" << endl;
+        << "EXIT : chiudi il simulatore" << endl << endl;
 }
 
 
@@ -119,6 +130,10 @@ void print_help_f()
 
 int main()
 {   
+    cout.setf(ios::fixed);
+    cout.setf(ios::showpoint);
+    cout.precision(2);
+
     //inizializzazione mappa
     ValueMap m = init_map();
     bool exit_cmd = false;
@@ -132,9 +147,23 @@ int main()
         cout << endl;
         
         int cmd = parse_command(command_string);
+        Resource res;
 
         switch(cmd)
         {
+            case set_resource_type:
+                float k, e;
+                cout << "fattore di propagazione: ";
+                cin >> k; cout << endl;
+                cout << "tolleranza sul fattore di propagazione: ";
+                cin >> e; cout << endl;
+                if(!m.new_resource_type(k, e))
+                    cout << "ERRORE: dati immessi non validi! k:" << k << " e:" << e << endl;
+            break;
+            case print_resource_type:
+                res = m.get_resource_stats();
+                cout << "coefficiente di propagazione=" << res.get_k() << "\ntolleranza=" << res.get_tollerance() << "\nseed=" << res.get_seed() << endl;
+            break;
             case insert_single_value:
                 insert_single_value_f(m);
             break;
