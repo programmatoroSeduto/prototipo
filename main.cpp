@@ -130,6 +130,9 @@ void print_help_f()
 
 int main()
 {   
+    cout << "Francesco Ganci, Lorenzo Terranova" << endl
+        << " UNTOLD GAMES - value spread throughout the basecamp - PROTOTIPO ALGORITMO DI PROPAGAZIONE" << endl << endl;
+
     cout.setf(ios::fixed);
     cout.setf(ios::showpoint);
     cout.precision(2);
