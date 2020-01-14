@@ -1,0 +1,1 @@
+g++ -Wall -pedantic "Resource.cpp" "Tile.cpp" "ValueMap.cpp" "main.cpp" -o "prototipo.exe"

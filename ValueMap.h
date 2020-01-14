@@ -246,6 +246,13 @@ class ValueMap
         -1 altrimenti
     */
     int idx(int i);
+
+    /*
+        verifica se quel tile è contenuto o no nel buffer
+        ritorna TRUE se lo contiene
+        altrimenti FALSE
+    */
+    bool buffer_contains(Tile* tl);
     
     /*
         ritorna l'elemento numero tot nel buffer

@@ -1,5 +1,8 @@
 #include <iostream>
-#include <cstdlib>
+//#include <cstdlib>
+#include <string>
+#include <cstring>
+//#include <istream>
 #include "ValueMap.h"
 using namespace std;
 
@@ -13,7 +16,10 @@ enum commands
     print_map,
     update_and_print,
     print_command_help,
-    logout
+    verify,
+    resource_diff,
+    logout,
+    nop
 };
 
 /*
@@ -22,26 +28,32 @@ enum commands
     ritorna il valore di un comando se la stringa è valida
     altrimenti ritorna -1
 */
-int parse_command(char* cmd)
+int parse_command(string cmd)
 {
-    if(strncmp(cmd, "SET_VALUE", 9))
+    if(cmd == "SET_VALUE")
         return insert_single_value;
-    else if (strncmp(cmd, "SET_VALUE_MULTI", 15))
+    else if (cmd == "SET_VALUE_MULTI")
         return insert_multi;
-    else if(strncmp(cmd, "UPDATE", 6))
+    else if(cmd == "UPDATE")
         return update;
-    else if(strncmp(cmd, "UPDATE_CK", 9))
+    else if(cmd == "UPDATE_CK")
         return update_clock;
-    else if(strncmp(cmd, "CK", 2))
+    else if(cmd == "CK")
         return print_clock;
-    else if(strncmp(cmd, "PRINT_MAP", 9))
+    else if(cmd == "PRINT_MAP" || cmd == "PRINT" || cmd == "P")
         return print_map;
-    else if(strncmp(cmd, "UPDATE_N_PRINT", 14))
+    else if(cmd == "UPDATE_N_PRINT" || cmd == "UP")
         return update_and_print;
-    else if(strncmp(cmd, "HELP", 4))
+    else if(cmd == "HELP")
         return print_command_help;
-    else if(strncmp(cmd, "EXIT", 4))
+    else if(cmd == "EXIT")
         return logout;
+    else if(cmd == "VERIFY")
+        return verify;
+    else if(cmd == "RES_DIFF")
+        return resource_diff;
+    else if(cmd == "")
+        return nop;
     else
         return -1;
 }
@@ -54,7 +66,15 @@ ValueMap init_map()
     cout << "\n" << "dimensioni della mappa: " << endl;
     int dim;
     cin >> dim; cout << endl;
-    return ValueMap(dim);
+    cout << "velocità di propagazione(tra 0 e 1): ";
+    float k;
+    cin >> k; cout << endl;
+    cout << "tolleranza sulla velocità di propagazione(tra 0 e 1): ";
+    float e;
+    cin >> e; cout << endl;
+    ValueMap m = ValueMap(dim);
+    m.new_resource_type(k, e);
+    return m;
 }
 
 
@@ -86,9 +106,11 @@ void print_help_f()
         << "UPDATE : aggiornamento per un ciclo di clock" << endl
         << "UPDATE_CK : ripeti l'aggiornamento per un certo ciclo di clock" << endl
         << "CK : stampa l'attuale valore del clock" << endl
-        << "PRINT_MAP : stampa la matrice" << endl
-        << "UPDATE_N_PRINT : esegui l'aggiornamento per un ciclo e stampa al termine" << endl
+        << "PRINT_MAP o PRINT o P : stampa la matrice" << endl
+        << "UPDATE_N_PRINT oppure UP : esegui l'aggiornamento per un ciclo e stampa al termine" << endl
         << "HELP : stampa questa guida dei comandi" << endl
+        << "VERIFY : verifica se il valore della risorsa è uguale a quello previsto" << endl
+        << "RES_DIFF : mostra la differenza tra il valore previsto di risorsa e quello calcolato dalla somma di tutte le celle della mappa" << endl
         << "EXIT : chiudi il simulatore" << endl;
 }
 
@@ -96,15 +118,19 @@ void print_help_f()
 
 
 int main()
-{
+{   
     //inizializzazione mappa
     ValueMap m = init_map();
     bool exit_cmd = false;
 
+    string command_string = "";
+
     while(!exit_cmd)
     {
-        char* command_string;
-        cin.getline(command_string, 50);
+        if(command_string == "") cout << "->\t";
+        getline(cin, command_string);
+        cout << endl;
+        
         int cmd = parse_command(command_string);
 
         switch(cmd)
@@ -113,8 +139,8 @@ int main()
                 insert_single_value_f(m);
             break;
             case insert_multi:
-                cout << "quanti valori! ";
-                int n = 0;
+                cout << "quanti valori? ";
+                int n;
                 cin >> n;
                 for(int i=0; i<n; i++)
                 {
@@ -145,13 +171,27 @@ int main()
             case print_command_help:
                 print_help_f();
             break;
+            case verify:
+                if(m.test_tot_resource())
+                    cout << "la risorsa si e' conservata." << endl;
+                else
+                    cout << "Il valore di risorsa non si e' conservato!" << endl
+                        << "differenza tra risorsa prevista e risorsa nella mappa: " << m.get_resource_diff() << endl;     
+            break;
+            case resource_diff:
+                cout << "differenza tra valore di risorsa previsto e valore nella mappa: " << m.get_resource_diff() << endl;
+            break;
             case logout:
                 exit_cmd = true;
             break;
+            case nop:
+                //do nothing!
+            break;
             default:
-                cout <<"ERRORE: comando " << command_string << "non valido!" << endl
+                cout <<"ERRORE: comando '" << command_string << "' non valido!" << endl
                     << "digita 'HELP' per la lista dei comandi" << endl;
         }
+        command_string = "";
     }
 
     cout << "chiusura..." << endl;

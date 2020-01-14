@@ -1,6 +1,7 @@
 /*IMPLEMENTAZIONE DELLA CLASSE RESOURCE*/
 
-#include <cstdlib>
+//#include <cstdlib>
+#include <iostream>
 #include <cmath>
 #include <ctime>
 #include "ValueMap.h"
@@ -34,7 +35,12 @@ Resource::Resource(float propagFactor, float toll, int seed)
 
 float Resource::get_k() { return propagationFactor; }
 
-float Resource::get_real_k() { return propagationFactor + generate_tollerance_value(); }
+float Resource::get_real_k() 
+{ 
+    float ttt = propagationFactor + generate_tollerance_value();
+    //cout << "GET_REAL_K propagationFactor=" << ttt << endl;
+    return ttt;
+}
 
 void Resource::seed_real_k() { srand((this->seed = time(NULL))); }
 
@@ -61,5 +67,7 @@ float Resource::set_toll(float new_toll)
 
 float Resource::generate_tollerance_value() 
 {
-    return ( ( 2 * rand() ) / RAND_MAX - 1 ) * tollerance;
+    float ttt = ( ( 2 * rand() ) / RAND_MAX - 1 ) * tollerance;
+    //cout << "TOLLERANCE=" << ttt << endl;
+    return ttt;
 }
